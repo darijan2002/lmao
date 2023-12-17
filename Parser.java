@@ -27,7 +27,7 @@ public class Parser {
                     Text> /* Output value Type */
     {
         // Map function
-      static Pattern p = Pattern.compile("(^[0-9.]*)\\s\\-\\s\\-\\s\\[.*\\/(.{8})\\:.*\\]\\s\\\"\\w*\\s(\\/.*)\\sHTTP.*\\\"");
+      static Pattern p = Pattern.compile("([0-9.]*).*/(.*)/.*\"GET (.*)\".*");
 
       public void map(LongWritable key, Text value, 
       OutputCollector<Text, Text> output,   
@@ -39,11 +39,13 @@ public class Parser {
 
          Matcher m = p.matcher(line);
          if(m.matches()) {
-            String ip = m.group(0);
-            String month = m.group(1);
-            String file = m.group(2);
-
-            output.collect(new Text(month + " " + file), new Text(ip)); 
+            String ip = m.group(1);
+            String month = m.group(2);
+            String file = m.group(3);
+            
+            Text k = new Text(month + " " + file);
+            Text v = new Text(ip);
+            output.collect(k, v); 
          }
 
       }
@@ -100,7 +102,7 @@ public class Parser {
 
         conf.setJobName("log_parser");
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(IntWritable.class);
+        conf.setOutputValueClass(Text.class);
         conf.setMapperClass(E_EMapper.class);
         conf.setCombinerClass(E_EReduce.class);
         conf.setReducerClass(E_EReduce.class);
